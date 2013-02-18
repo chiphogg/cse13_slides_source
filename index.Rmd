@@ -1,0 +1,212 @@
+---
+title       : Showing surface uncertainty using smooth animations
+subtitle    : 
+author      : Charles R. Hogg III
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : [mathjax, bootstrap]     # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+
+---
+
+# Stuff I want to communicate!
+
+The **point** is we need a way to view a probability distribution over surfaces.
+(It's one thing to compute the distribution; we also need to _visualize_ it.)
+
+**Early on**: a *critical* idea:
+  - The input to a multivariate Gaussian is a bunch of independent 1-D Gaussians
+    - Plot a 
+  - So we can focus on getting a good 1D Gaussian, which is easier to visualize!
+
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+require(rgl)
+knit_hooks$set(webgl = function(before, options, envir) {
+  library(rgl)
+  ## after a chunk has been evaluated
+  if (before || rgl.cur() == 0) return()  # no active device
+  name = tempfile('rgl', '.', '.html'); on.exit(unlink(name))
+  par3d(windowRect = 100 + options$dpi * c(0, 0, options$fig.width, options$fig.height))
+  Sys.sleep(.25) # need time to respond to window size change
+
+  writeLines(c('%WebGL%', '<script>webGLStart();</script>'), tpl <- tempfile())
+  writeWebGL(dir = dirname(name), filename = name, template = tpl)
+  res = readLines(name)
+  res = res[!grepl('^\\s*$', res)] # remove blank lines
+  paste(gsub('^\\s*<', '<', res), collapse = '\n') # no spaces before HTML tags
+})
+```
+
+```{r wxyz, webgl=TRUE, fig.width=8, fig.height=9}
+x <- sort(rnorm(1000))
+y <- rnorm(1000)
+z <- rnorm(1000) + atan2(x,y)
+plot3d(x, y, z, col=rainbow(1000))
+```
+
+```{r xyz, webgl=TRUE}
+x <- sort(rnorm(1000))
+y <- rnorm(1000)
+z <- rnorm(1000) + atan2(x,y)
+plot3d(x, y, z, col=rainbow(1000))
+```
+
+---
+
+```{r test3d_setup, webgl=TRUE, echo=FALSE, include=FALSE}
+require(rgl)
+require(gppois)
+set.seed(2)
+
+# Generate synthetic datapoints and plotting grid
+X.data <- HexagonalGrid(n=3, unit=1)
+data <- Dataset(id='random',
+  data=data.frame(X=X.data, Y=0.5 * rnorm(nrow(X.data))),
+  X.names=c('X.1', 'X.2'), column='Y')
+X.plot <- HexagonalGrid(n=30, unit=0.1)
+N.plot <- nrow(X.plot)
+
+# Create gppois models to train on datapoints
+low.noise <- 1e-6
+m.wide <- Model(id="wide")
+m.wide$AddCovariance(CovarianceSE(ell=5, sigma.f=0.1))
+m.wide$SetNoiseBounds(low.noise)
+m.jumpy <- Model(id="jumpy")
+m.jumpy$AddCovariance(CovarianceSE(ell=0.5, sigma.f=1))
+m.jumpy$SetNoiseBounds(low.noise)
+m.wide$Train(d=data)
+m.jumpy$Train(d=data)
+
+# Matrices for plotting draws
+```
+
+```{r abc, webgl=TRUE, echo=FALSE}
+data$Plot2D()
+L.wide <- m.wide$L(d=data, X.out=X.plot)
+PlotSurface(X=X.plot, Y=(L.wide %*% rnorm(N.plot)), color='blue', new.window=FALSE)
+L.jumpy <- m.jumpy$L(d=data, X.out=X.plot)
+PlotSurface(X=X.plot, Y=(L.jumpy %*% rnorm(N.plot)), color='red', new.window=FALSE)
+```
+
+---
+
+## Introduction
+
+We want to estimate **surfaces**.
+  - (Plot some surface)
+So, we have a probability distribution whose elements are these guys; this one here happens to be the mean.
+
+Now, it's one thing to _compute_ a probability distribution; quite another to
+_visualize_ it.
+
+> - Hi there  
+    ```{r echo=FALSE, fig.height=3}
+    plot(rnorm(100))
+    ```
+> - Why, hello
+    ```{r echo=FALSE, fig.height=3}
+    plot(rnorm(100))
+    ```
+
+---
+
+## Intermission
+
+
+
+---
+
+### First try: pointwise uncertainty
+
+One common approach is to give some kind of credible interval at each point.
+These usually won't vary much from point to point, so they come out looking
+pretty smooth.  (Here's a 1D example for visual clarity.)
+
+The problem is, you have thrown away any information about how the points
+relate to each other. This information is critically important; for instance,
+in this case, actual members of the distribution look more like this, or this;
+the credible interval approach can mislead.
+
+Not to mention, in 2D, it can be kind of hard to see the credible intervals.
+
+---
+
+### Second try: plotting draws from the distribution
+
+HERE
+
+---
+
+### Existing Solution
+
+ESG 1997.
+  - Pro:
+    - Elegant, obviously-correct interpolation
+    - Computationally fast
+  - Con:
+    - Chained to keyframes
+      - Abrupt velocity changes
+
+Good segueway into the advantages of mine...
+
+Advantages of ESG which mine retains:
+  - Simple, elegant, exact
+Disadvantages of ESG which mine corrects:
+  - perfectly smooth motion
+  - no longer chained to keyframes!
+
+_One line of `R` code!_\
+...with `n` semicolons\
+(Okay, it's `n+1` lines of `R` code.)
+
+Getting the statistics **right** -- that's **critical**!
+  - Show animated Q-Q plots to drive home this point
+
+---
+
+## Continuous animation
+
+  1. Naive interpolation: _wrong statistics_
+  2. ESG: elegant and correct
+  3. Making it smooth
+
+---
+
+### First pass: connect the dots
+
+(show draws from normal distribution; function of time)
+
+(show dots connected)
+
+(show tons of timetraces; highlight one)
+
+So what's wrong with this?
+
+(Plot animated Q-Q plots)
+
+Basis functions
+
+---
+
+# Other ideas
+
+Atomic motion might be a good way to show the advantages of smoothness
+
+---
+
+## Hey, is ESG only independent at the keyframes?
+
+Might be good to point out.
+
+---
+
+## Conclusions
+
+- Part of my goal is to make ESG's excellent work more widely known
+- Animated uncertainty visualization belongs in the toolbox of every statistical researcher.
+- If that uncertainty has a Gaussian distribution, the method I've presented is an excellent way to achieve it.

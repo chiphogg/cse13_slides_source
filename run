@@ -1,0 +1,4 @@
+#!/bin/bash
+
+R-2.15 --slave -e 'library(slidify); slidify("index.Rmd")'
+
