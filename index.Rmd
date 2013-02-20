@@ -30,67 +30,61 @@ knit_hooks$set(webgl = function(before, options, envir) {
   library(rgl)
   ## after a chunk has been evaluated
   if (before || rgl.cur() == 0) return()  # no active device
-  name = tempfile('rgl', '.', '.html'); on.exit(unlink(name))
+  name <- sprintf('rgl_%s.html', options$label)
   par3d(windowRect = 100 + options$dpi * c(0, 0, options$fig.width, options$fig.height))
-  Sys.sleep(.25) # need time to respond to window size change
-
+  Sys.sleep(.05) # need time to respond to window size change
   writeLines(c('%WebGL%', '<script>webGLStart();</script>'), tpl <- tempfile())
   writeWebGL(dir = dirname(name), filename = name, template = tpl)
-  res = readLines(name)
-  res = res[!grepl('^\\s*$', res)] # remove blank lines
-  paste(gsub('^\\s*<', '<', res), collapse = '\n') # no spaces before HTML tags
+  sprintf('<iframe src="%s" width="%s" height="%s"></iframe>', name,
+    options$dpi * options$fig.width, options$dpi * options$fig.height)
 })
-```
-
-```{r wxyz, webgl=TRUE, fig.width=8, fig.height=9}
-x <- sort(rnorm(1000))
-y <- rnorm(1000)
-z <- rnorm(1000) + atan2(x,y)
-plot3d(x, y, z, col=rainbow(1000))
-```
-
-```{r xyz, webgl=TRUE}
-x <- sort(rnorm(1000))
-y <- rnorm(1000)
-z <- rnorm(1000) + atan2(x,y)
-plot3d(x, y, z, col=rainbow(1000))
 ```
 
 ---
 
-```{r test3d_setup, webgl=TRUE, echo=FALSE, include=FALSE}
-require(rgl)
+```{r test3d_setup, echo=FALSE, include=FALSE}
 require(gppois)
 set.seed(2)
 
 # Generate synthetic datapoints and plotting grid
-X.data <- HexagonalGrid(n=3, unit=1)
+low.noise <- 1e-6
+X.data <- HexagonalGrid(n=5, unit=1)
+m.true <- Model("true")
+data.0 <- data.frame(X=X.data, Y=X.data[, 1])
+d.0 <- Dataset(id='throwaway', data=data.0,
+    X.names=c('X.1', 'X.2'), column='Y')
+```
+
+`r print(head(data.0))` is so great
+
+---
+
+```{r test3d_more_setup, echo=FALSE, include=FALSE}
+Y.true <- m.true$L(d=d.0) %*% rnorm(n=d.0$n)
+m.true$AddCovariance(CovarianceSE(ell=6, sigma.f=1))
 data <- Dataset(id='random',
-  data=data.frame(X=X.data, Y=0.5 * rnorm(nrow(X.data))),
+  data=data.frame(X=X.data, Y=Y.true + 0.1 * rnorm(nrow(X.data))),
   X.names=c('X.1', 'X.2'), column='Y')
 X.plot <- HexagonalGrid(n=30, unit=0.1)
 N.plot <- nrow(X.plot)
 
 # Create gppois models to train on datapoints
-low.noise <- 1e-6
 m.wide <- Model(id="wide")
-m.wide$AddCovariance(CovarianceSE(ell=5, sigma.f=0.1))
+m.wide$AddCovariance(CovarianceSE(ell.range=c(5, 10), sigma.f.range=c(0.01, 1000)))
 m.wide$SetNoiseBounds(low.noise)
 m.jumpy <- Model(id="jumpy")
-m.jumpy$AddCovariance(CovarianceSE(ell=0.5, sigma.f=1))
+m.jumpy$AddCovariance(CovarianceSE(ell.range=c(0.2, 1), sigma.f.range=c(0.01, 1000)))
 m.jumpy$SetNoiseBounds(low.noise)
-m.wide$Train(d=data)
-m.jumpy$Train(d=data)
+#m.wide$Train(d=data)
+#m.jumpy$Train(d=data)
 
 # Matrices for plotting draws
+L.wide <- m.wide$L(d=data, X.out=X.plot)
+L.jumpy <- m.jumpy$L(d=data, X.out=X.plot)
 ```
 
-```{r abc, webgl=TRUE, echo=FALSE}
-data$Plot2D()
-L.wide <- m.wide$L(d=data, X.out=X.plot)
-PlotSurface(X=X.plot, Y=(L.wide %*% rnorm(N.plot)), color='blue', new.window=FALSE)
-L.jumpy <- m.jumpy$L(d=data, X.out=X.plot)
-PlotSurface(X=X.plot, Y=(L.jumpy %*% rnorm(N.plot)), color='red', new.window=FALSE)
+```{r}
+plot(X.data[, 1], Y.true)
 ```
 
 ---
@@ -103,19 +97,6 @@ So, we have a probability distribution whose elements are these guys; this one h
 
 Now, it's one thing to _compute_ a probability distribution; quite another to
 _visualize_ it.
-
-> - Hi there  
-    ```{r echo=FALSE, fig.height=3}
-    plot(rnorm(100))
-    ```
-> - Why, hello
-    ```{r echo=FALSE, fig.height=3}
-    plot(rnorm(100))
-    ```
-
----
-
-## Intermission
 
 
 
@@ -133,6 +114,16 @@ in this case, actual members of the distribution look more like this, or this;
 the credible interval approach can mislead.
 
 Not to mention, in 2D, it can be kind of hard to see the credible intervals.
+
+---
+
+```{r pointwise, webgl=TRUE, echo=FALSE}
+data$Plot2D()
+L.wide <- m.wide$L(d=data, X.out=X.plot)
+PlotSurface(X=X.plot, Y=(L.wide %*% rnorm(N.plot)), color='blue', new.window=FALSE)
+L.jumpy <- m.jumpy$L(d=data, X.out=X.plot)
+PlotSurface(X=X.plot, Y=(L.jumpy %*% rnorm(N.plot)), color='red', new.window=FALSE)
+```
 
 ---
 
