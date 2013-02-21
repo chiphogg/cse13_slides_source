@@ -48,43 +48,45 @@ set.seed(2)
 
 # Generate synthetic datapoints and plotting grid
 low.noise <- 1e-6
-X.data <- HexagonalGrid(n=5, unit=1)
+actual.noise <- 0.2 ^ 2
+X.data <- HexagonalGrid(n=3, unit=3)
 m.true <- Model("true")
-data.0 <- data.frame(X=X.data, Y=X.data[, 1])
+data.0 <- data.frame(X=X.data, Y=0)
 d.0 <- Dataset(id='throwaway', data=data.0,
     X.names=c('X.1', 'X.2'), column='Y')
-```
-
-`r print(head(data.0))` is so great
-
----
-
-```{r test3d_more_setup, echo=FALSE, include=FALSE}
-Y.true <- m.true$L(d=d.0) %*% rnorm(n=d.0$n)
-m.true$AddCovariance(CovarianceSE(ell=6, sigma.f=1))
-data <- Dataset(id='random',
-  data=data.frame(X=X.data, Y=Y.true + 0.1 * rnorm(nrow(X.data))),
+c.true <- CovarianceSE(ell=5, sigma.f=0.2)
+m.true$AddCovariance(c.true)
+m.true$SetNoiseBounds(low.noise)
+K <- gppois:::KTotal.Model(m.true, d.0)
+L <- t(chol(K))
+Y.true <- L %*% rnorm(d.0$n)
+Y.noisy <- Y.true + actual.noise * rnorm(d.0$n)
+data <- Dataset(id='random', data=data.frame(X=X.data, Y=Y.noisy),
   X.names=c('X.1', 'X.2'), column='Y')
-X.plot <- HexagonalGrid(n=30, unit=0.1)
+X.plot <- HexagonalGrid(n=30, unit=0.3)
 N.plot <- nrow(X.plot)
+data$Plot2D()
 
 # Create gppois models to train on datapoints
 m.wide <- Model(id="wide")
-m.wide$AddCovariance(CovarianceSE(ell.range=c(5, 10), sigma.f.range=c(0.01, 1000)))
-m.wide$SetNoiseBounds(low.noise)
+m.wide$AddCovariance(CovarianceSE(ell.bounds=c(5, 10), sigma.f.bounds=c(0.01, 1000)))
+m.wide$SetNoiseBounds(actual.noise)
 m.jumpy <- Model(id="jumpy")
-m.jumpy$AddCovariance(CovarianceSE(ell.range=c(0.2, 1), sigma.f.range=c(0.01, 1000)))
-m.jumpy$SetNoiseBounds(low.noise)
-#m.wide$Train(d=data)
-#m.jumpy$Train(d=data)
+m.jumpy$AddCovariance(CovarianceSE(ell.bounds=c(0.2, 1), sigma.f.bounds=c(0.01, 1000)))
+m.jumpy$SetNoiseBounds(actual.noise)
+m.wide$Train(d=data)
+m.jumpy$Train(d=data)
+
+# Make the plots
+p.wide <- m.wide$PosteriorInterval(d=data, X.out=X.plot)
+p.jumpy <- m.jumpy$PosteriorInterval(d=data, X.out=X.plot)
+PlotSurface(X=X.plot, Y=p.wide$mean, color='blue', new.window=FALSE)
+PlotSurface(X=X.plot, Y=p.jumpy$mean, color='red', new.window=FALSE)
+
 
 # Matrices for plotting draws
 L.wide <- m.wide$L(d=data, X.out=X.plot)
 L.jumpy <- m.jumpy$L(d=data, X.out=X.plot)
-```
-
-```{r}
-plot(X.data[, 1], Y.true)
 ```
 
 ---
