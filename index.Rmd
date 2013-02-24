@@ -9,23 +9,13 @@ hitheme     : tomorrow      #
 widgets     : [mathjax, bootstrap]     # {mathjax, quiz, bootstrap}
 mode        : selfcontained # {standalone, draft}
 
----
-
-# Stuff I want to communicate!
-
-The **point** is we need a way to view a probability distribution over surfaces.
-(It's one thing to compute the distribution; we also need to _visualize_ it.)
-
-**Early on**: a *critical* idea:
-  - The input to a multivariate Gaussian is a bunch of independent 1-D Gaussians
-    - Plot a 
-  - So we can focus on getting a good 1D Gaussian, which is easier to visualize!
-
----
-
 ```{r setup, include=FALSE}
 require(knitr)
-require(rgl)
+require(gppois)
+require(ggplot2)
+opts_chunk$set(fig.width=13, fig.height=5, warning=FALSE, cache=TRUE,
+  dev='CairoPNG', echo=FALSE)
+theme_set(theme_classic(40))
 knit_hooks$set(webgl = function(before, options, envir) {
   library(rgl)
   ## after a chunk has been evaluated
@@ -42,98 +32,251 @@ knit_hooks$set(webgl = function(before, options, envir) {
 
 ---
 
-```{r test3d_setup, echo=FALSE, include=FALSE}
-require(gppois)
-set.seed(2)
+## Motivation
 
-# Generate synthetic datapoints and plotting grid
-low.noise <- 1e-6
-actual.noise <- 0.2 ^ 2
-X.data <- HexagonalGrid(n=3, unit=3)
-m.true <- Model("true")
-data.0 <- data.frame(X=X.data, Y=0)
-d.0 <- Dataset(id='throwaway', data=data.0,
-    X.names=c('X.1', 'X.2'), column='Y')
-c.true <- CovarianceSE(ell=5, sigma.f=0.2)
-m.true$AddCovariance(c.true)
-m.true$SetNoiseBounds(low.noise)
-K <- gppois:::KTotal.Model(m.true, d.0)
-L <- t(chol(K))
-Y.true <- L %*% rnorm(d.0$n)
-Y.noisy <- Y.true + actual.noise * rnorm(d.0$n)
-data <- Dataset(id='random', data=data.frame(X=X.data, Y=Y.noisy),
-  X.names=c('X.1', 'X.2'), column='Y')
-X.plot <- HexagonalGrid(n=30, unit=0.3)
-N.plot <- nrow(X.plot)
-data$Plot2D()
+### Level 3 heading
 
-# Create gppois models to train on datapoints
-m.wide <- Model(id="wide")
-m.wide$AddCovariance(CovarianceSE(ell.bounds=c(5, 10), sigma.f.bounds=c(0.01, 1000)))
-m.wide$SetNoiseBounds(actual.noise)
-m.jumpy <- Model(id="jumpy")
-m.jumpy$AddCovariance(CovarianceSE(ell.bounds=c(0.2, 1), sigma.f.bounds=c(0.01, 1000)))
-m.jumpy$SetNoiseBounds(actual.noise)
-m.wide$Train(d=data)
-m.jumpy$Train(d=data)
+Easy to make **bold** or _italic_.
 
-# Make the plots
-p.wide <- m.wide$PosteriorInterval(d=data, X.out=X.plot)
-p.jumpy <- m.jumpy$PosteriorInterval(d=data, X.out=X.plot)
-PlotSurface(X=X.plot, Y=p.wide$mean, color='blue', new.window=FALSE)
-PlotSurface(X=X.plot, Y=p.jumpy$mean, color='red', new.window=FALSE)
+Also easy to $E = mc^2$
 
+Or, $p(x | \theta) = \frac{1}{\sqrt{2\pi \sigma^2}} \exp \left[ -\frac{1}{2} \frac{(x - \theta)^2}{\sigma^2} \right]$
 
-# Matrices for plotting draws
-L.wide <- m.wide$L(d=data, X.out=X.plot)
-L.jumpy <- m.jumpy$L(d=data, X.out=X.plot)
+Why _animations?_
+
+---
+
+### Sequence of slides go here
+
+---
+
+## Decoupling the Problem
+
+We can _reduce_ our problem to a **single random variable**.
+
+(Visualization: smooth series of points in top left, covariance in top right, lower cholesky in bot right, noisy sequence in bot left)
+
+---
+
+## Caveat: statistics
+
+  <div style='font-size: 2em; text-align: center;'>
+    Too easy to mislead...
+  </div>
+
+---
+
+## Caveat: statistics (individual points)
+
+```{r}
+set.seed(1)
+N.frames <- 14
+t.frames <- 1:N.frames
+Y.data <- rnorm(length(t.frames))
+single.points <- geom_point(size=4)
+p.base <- (ggplot(data=data.frame(x=t.frames, y=Y.data), aes(x=x, y=y))
+  + scale_x_continuous("Time")
+  + scale_y_continuous("", limits=3 * c(-1, 1))
+  )
+print(p.base + single.points)
 ```
 
 ---
 
-## Introduction
+## Caveat: statistics (naive interpolation)
 
-We want to estimate **surfaces**.
-  - (Plot some surface)
-So, we have a probability distribution whose elements are these guys; this one here happens to be the mean.
-
-Now, it's one thing to _compute_ a probability distribution; quite another to
-_visualize_ it.
-
-
-
----
-
-### First try: pointwise uncertainty
-
-One common approach is to give some kind of credible interval at each point.
-These usually won't vary much from point to point, so they come out looking
-pretty smooth.  (Here's a 1D example for visual clarity.)
-
-The problem is, you have thrown away any information about how the points
-relate to each other. This information is critically important; for instance,
-in this case, actual members of the distribution look more like this, or this;
-the credible interval approach can mislead.
-
-Not to mention, in 2D, it can be kind of hard to see the credible intervals.
-
----
-
-```{r pointwise, webgl=TRUE, echo=FALSE}
-data$Plot2D()
-L.wide <- m.wide$L(d=data, X.out=X.plot)
-PlotSurface(X=X.plot, Y=(L.wide %*% rnorm(N.plot)), color='blue', new.window=FALSE)
-L.jumpy <- m.jumpy$L(d=data, X.out=X.plot)
-PlotSurface(X=X.plot, Y=(L.jumpy %*% rnorm(N.plot)), color='red', new.window=FALSE)
+```{r}
+print(p.base
+  + single.points
+  + geom_line()
+  )
 ```
 
 ---
 
-### Second try: plotting draws from the distribution
+## Caveat: statistics (entire distribution)
 
-HERE
+```{r}
+pts.per.frame <- 200
+new.data <- data.frame(x=t.frames, y=rnorm(pts.per.frame * N.frames),
+  label=rep(paste('a', 1:pts.per.frame, sep=''), each=N.frames))
+dist.points <- geom_point(data=new.data, colour='grey')
+print(p.base
+  + dist.points
+  + single.points
+  + geom_line()
+  )
+```
 
 ---
+
+## Caveat: statistics (interpolated distribution)
+
+```{r}
+dist.lines <- geom_line(data=new.data, aes(group=label), colour='grey')
+print(p.base
+  + dist.points
+  + dist.lines
+  + single.points
+  + geom_line()
+  )
+```
+
+<div style='font-size: 1.6em; text-align: center;'>
+  Statistics <em>between</em> keyframes<br>
+  are <strong>clearly different</strong><br>
+  from statistics <em>at</em> keyframes
+</div>
+
+---
+
+## Solution: connect differently
+
+```{r}
+print(p.base
+  + single.points
+  + geom_line()
+  )
+```
+
+---
+
+## Solution: connect differently
+
+```{r}
+N.out <- 500
+t.out <- seq(from=head(t.frames, 1), to=tail(t.frames, 1), length=N.out)
+weight <- function(t.in, t.out) {
+  ifelse(abs(t.in - t.out) > 1, 0, cos((t.in - t.out) * pi / 2))
+}
+mat.interpolate <- outer(t.out, t.frames, weight)
+esg.data <- data.frame(x=t.out, y=mat.interpolate %*% Y.data)
+esg.lines <- geom_line(data=esg.data, aes(x=x, y=y))
+print(p.base
+  + single.points
+  + esg.lines
+  )
+```
+
+---
+
+## Distributions: old connection
+
+```{r}
+dist.lines <- geom_line(data=new.data, aes(group=label), colour='grey')
+print(p.base
+  + dist.points
+  + dist.lines
+  + single.points
+  + geom_line()
+  )
+```
+
+---
+
+## Distributions: new connection
+
+```{r}
+temp.matrix <- matrix(new.data$y, ncol=pts.per.frame)
+interp <- mat.interpolate %*% temp.matrix
+new.data.lines <- data.frame(x=t.out, y=as.vector(interp),
+  label=rep(paste('a', 1:pts.per.frame, sep=''), each=N.out))
+esg.dist.lines <- geom_line(data=new.data.lines, colour='grey',
+  aes(x=x, y=y, group=label))
+print(p.base
+  + esg.dist.lines
+  + single.points
+  + esg.lines
+  )
+```
+**E**hlschlaeger, **S**hortridge, **G**oodchild (**ESG**)
+> - By eye: looks like better statistics
+> - By math: easy to prove **same distribution at all times**
+
+---
+
+## ESG: Basis function view
+
+```{r}
+esg.basis.plot <- function(n) {
+  d <- data.frame(t=t.out, y=as.vector(mat.interpolate[, 1:n]),
+    label=rep(paste('a', 1:n, sep=''), each=N.out))
+  p <- (ggplot(data=d, aes(x=t, y=y, colour=label))
+    + geom_line(size=1.5)
+    + scale_x_continuous('Time', limits=c(1, n))
+    + scale_colour_brewer(palette='Set1')
+    + theme(legend.position='none')
+    )
+  return (p)
+}
+p.esg.6 <- esg.basis.plot(6)
+rect <- data.frame(x1=1, x2=2, y1=-Inf, y2=Inf)
+print (p.esg.6)
+```
+
+<div style='text-align: center; margin-top: -2em;'>
+$$y(t) = \sum_{i=1}^N \epsilon_i b_i(t) \;\;\;\;\;\;
+\epsilon_i \underset{\text{i.i.d.}}{\sim} N(0, \sigma^2) $$
+</div>
+
+> - **NOTE**: $y(t)$ is sum of Gaussian random variables $\rightarrow$ _is also Gaussian_
+> - $\therefore$ statistics completely determined by mean and variance, or
+    $\langle y(t) \rangle$ and $\langle y(t)^2 \rangle$
+
+---
+
+## ESG: Checking the statistics
+
+```{r}
+print (p.esg.6
+  + geom_rect(inherit.aes=FALSE, data=rect, aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), colour='black', alpha=0.4)
+  )
+```
+
+<div style='text-align: center;'>
+Zoom in on a single transition region...
+</div>
+
+---
+
+## Statistics in the transition region
+
+```{r include=FALSE, cache=FALSE}
+p <- (esg.basis.plot(2)
+  + scale_y_continuous(breaks=c(0, 0.5, 1))
+  + scale_x_continuous('Time', breaks=c(1, 1.5, 2), limits=c(1, 2),
+    labels=(c(expression(t[1]), '', expression(t[2]))))
+  )
+```
+
+```{r fig.height=4, cache=FALSE}
+print (p)
+```
+
+  <ul class='block2 build' style='margin-top: -1em;'>
+    <li style='width: 40%;'>
+      $$\begin{split}
+      \langle y(t) \rangle &= \langle \epsilon_1 \rangle b_1(t) + \langle \epsilon_2 \rangle b_2(t) \\
+      &= 0
+      \end{split}$$
+    </li>
+    <li style='width: 60%;'>
+      $$\begin{split}
+      \langle y(t)^2 \rangle &= b_1(t)^2 \langle \epsilon_1^2 \rangle + 2b_1(t)b_2(t)\langle \epsilon_1\epsilon_2 \rangle + b_2(t)^2 \langle \epsilon_2^2 \rangle \\
+      &= \sigma^2 (b_1(t)^2 + b_2(t)^2)
+      \end{split}$$
+    </li>
+    <li style='font-size: 1.4em; width: 100%; margin-top: -1.2em;'>
+      $\therefore$ want $(b_1(t)^2 + b_2(t)^2) \equiv 1 \;\;\; \forall t$
+    </li>
+    <li style='font-size: 1.4em; width: 100%;'>
+      $b_1(t) = \cos\left(\frac{t-t_1}{t_2-t_1}\frac{\pi}{2}\right) \;\;\;\;\;\;\;\; b_2(t) = \sin\left(\frac{t-t_1}{t_2-t_1}\frac{\pi}{2}\right)$
+    </li>
+  </ul>
+
+---
+
+## Old stuff
 
 ### Existing Solution
 
@@ -157,44 +300,11 @@ _One line of `R` code!_\
 ...with `n` semicolons\
 (Okay, it's `n+1` lines of `R` code.)
 
-Getting the statistics **right** -- that's **critical**!
-  - Show animated Q-Q plots to drive home this point
-
----
-
-## Continuous animation
-
-  1. Naive interpolation: _wrong statistics_
-  2. ESG: elegant and correct
-  3. Making it smooth
-
----
-
-### First pass: connect the dots
-
-(show draws from normal distribution; function of time)
-
-(show dots connected)
-
-(show tons of timetraces; highlight one)
-
-So what's wrong with this?
-
-(Plot animated Q-Q plots)
-
-Basis functions
-
 ---
 
 # Other ideas
 
 Atomic motion might be a good way to show the advantages of smoothness
-
----
-
-## Hey, is ESG only independent at the keyframes?
-
-Might be good to point out.
 
 ---
 
