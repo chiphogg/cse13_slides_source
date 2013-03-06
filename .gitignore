@@ -1,0 +1,6 @@
+rgl_*.html
+*.RO
+*.gif
+figure/
+index.R
+index.md

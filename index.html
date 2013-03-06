@@ -20,6 +20,7 @@
   
     <link rel="stylesheet" href = "libraries/widgets/bootstrap/css/bootstrap.css">
 <link rel="stylesheet" href = "libraries/widgets/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href = "assets/css/custom.css">
 <link rel="stylesheet" href = "assets/css/ribbons.css">
 
 </head>
@@ -43,22 +44,22 @@
     <!-- SLIDES -->
       <slide class="" id="slide-1" style="background:;">
   <hgroup>
-    <h1>Stuff I want to communicate!</h1>
+    <h2>Steel strain interpolation</h2>
   </hgroup>
   <article>
-    <p>The <strong>point</strong> is we need a way to view a probability distribution over surfaces.
-(It&#39;s one thing to compute the distribution; we also need to <em>visualize</em> it.)</p>
+    <p><img style='float: left;' src='custom/plate.jpg'></p>
 
-<p><strong>Early on</strong>: a <em>critical</em> idea:</p>
+<iframe src="rgl_strain-datapoints.html" width="936" height="288"></iframe>
 
-<ul>
-<li>The input to a multivariate Gaussian is a bunch of independent 1-D Gaussians
+<p>Automotive application: stronger, lighter steels</p>
 
 <ul>
-<li>Plot a </li>
-</ul></li>
-<li>So we can focus on getting a good 1D Gaussian, which is easier to visualize!</li>
+<li><strong>Goal</strong>: relate <em>stress</em> and <em>strain</em> at <strong>same point</strong> on material</li>
+<li><strong>Problem</strong>: measurements are incompatible!</li>
+<li><strong>Solution</strong>: measure surroundings; infer in the gap</li>
 </ul>
+
+<p><aside>Collaboration with Adam Creuziger and Mark Iadicola at NIST</aside></p>
 
   </article>
   <!-- Presenter Notes -->
@@ -66,23 +67,21 @@
 
       <slide class="" id="slide-2" style="background:;">
   <hgroup>
-    
+    <h2>Use intervals?</h2>
   </hgroup>
   <article>
-    
+    <iframe src="rgl_unnamed-chunk-2.html" width="936" height="504"></iframe>
+
   </article>
   <!-- Presenter Notes -->
 </slide>
 
       <slide class="" id="slide-3" style="background:;">
   <hgroup>
-    
+    <h2>CI Disadvantage:</h2>
   </hgroup>
   <article>
-    <pre><code class="r">hist(Y.true)
-</code></pre>
-
-<p><img src="figure/unnamed-chunk-1.png" alt="plot of chunk unnamed-chunk-1"> </p>
+    <p><img src="figure/unnamed-chunk-4.png" alt="plot of chunk unnamed-chunk-4"> </p>
 
   </article>
   <!-- Presenter Notes -->
@@ -90,18 +89,14 @@
 
       <slide class="" id="slide-4" style="background:;">
   <hgroup>
-    <h2>Introduction</h2>
+    <h2>CI Disadvantage:</h2>
   </hgroup>
   <article>
-    <p>We want to estimate <strong>surfaces</strong>.</p>
+    <p><img src="figure/unnamed-chunk-5.png" alt="plot of chunk unnamed-chunk-5"> </p>
 
-<ul>
-<li>(Plot some surface)
-So, we have a probability distribution whose elements are these guys; this one here happens to be the mean.</li>
-</ul>
-
-<p>Now, it&#39;s one thing to <em>compute</em> a probability distribution; quite another to
-<em>visualize</em> it.</p>
+<div class='bigger' style='text-align: center; width: 100%;'>
+  Loses <strong>horizontal</strong> information
+</div>
 
   </article>
   <!-- Presenter Notes -->
@@ -109,19 +104,10 @@ So, we have a probability distribution whose elements are these guys; this one h
 
       <slide class="" id="slide-5" style="background:;">
   <hgroup>
-    <h3>First try: pointwise uncertainty</h3>
+    <h2>Show multiple draws?</h2>
   </hgroup>
   <article>
-    <p>One common approach is to give some kind of credible interval at each point.
-These usually won&#39;t vary much from point to point, so they come out looking
-pretty smooth.  (Here&#39;s a 1D example for visual clarity.)</p>
-
-<p>The problem is, you have thrown away any information about how the points
-relate to each other. This information is critically important; for instance,
-in this case, actual members of the distribution look more like this, or this;
-the credible interval approach can mislead.</p>
-
-<p>Not to mention, in 2D, it can be kind of hard to see the credible intervals.</p>
+    <iframe src="rgl_unnamed-chunk-6.html" width="936" height="504"></iframe>
 
   </article>
   <!-- Presenter Notes -->
@@ -129,127 +115,96 @@ the credible interval approach can mislead.</p>
 
       <slide class="" id="slide-6" style="background:;">
   <hgroup>
-    
+    <h2>Show one at a time?</h2>
   </hgroup>
   <article>
-    <pre><code>## Loading required package: geometry
-</code></pre>
-
-<pre><code>## Loading required package: magic
-</code></pre>
-
-<pre><code>## Loading required package: abind
-</code></pre>
-
-<iframe src="rgl_pointwise.html" width="504" height="504"></iframe>
+    <p><img src='custom/steel_strain/steel_strain_random.gif'></p>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
-      <slide class="" id="slide-7" style="background:;">
+      <slide class="move_image" id="slide-7" style="background:;">
   <hgroup>
-    <h3>Second try: plotting draws from the distribution</h3>
+    <h2>Decoupling the Problem</h2>
   </hgroup>
   <article>
-    <p>HERE</p>
+    <div style='clear: both;'>
+  We can <em>reduce</em> our problem to a <strong>single random variable</strong>.
+</div>
+
+<p><img src="figure/unnamed-chunk-8.png" alt="plot of chunk unnamed-chunk-8"> </p>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
-      <slide class="" id="slide-8" style="background:;">
+      <slide class="move_image" id="slide-8" style="background:;">
   <hgroup>
-    <h3>Existing Solution</h3>
+    <h2>Decoupling the Problem</h2>
   </hgroup>
   <article>
-    <p>ESG 1997.</p>
+    <div style='clear: both;'>
+  We can <em>reduce</em> our problem to a <strong>single random variable</strong>.
+</div>
 
-<ul>
-<li>Pro:
-
-<ul>
-<li>Elegant, obviously-correct interpolation</li>
-<li>Computationally fast</li>
-</ul></li>
-<li>Con:
-
-<ul>
-<li>Chained to keyframes
-
-<ul>
-<li>Abrupt velocity changes</li>
-</ul></li>
-</ul></li>
-</ul>
-
-<p>Good segueway into the advantages of mine...</p>
-
-<p>Advantages of ESG which mine retains:</p>
-
-<ul>
-<li>Simple, elegant, exact
-Disadvantages of ESG which mine corrects:</li>
-<li>perfectly smooth motion</li>
-<li>no longer chained to keyframes!</li>
-</ul>
-
-<p><em>One line of <code>R</code> code!</em>\
-...with <code>n</code> semicolons\
-(Okay, it&#39;s <code>n+1</code> lines of <code>R</code> code.)</p>
-
-<p>Getting the statistics <strong>right</strong> -- that&#39;s <strong>critical</strong>!</p>
-
-<ul>
-<li>Show animated Q-Q plots to drive home this point</li>
-</ul>
+<p><img src="figure/decoupling-21.png" alt="plot of chunk decoupling-2"> <img src="figure/decoupling-22.png" alt="plot of chunk decoupling-2"> </p>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
-      <slide class="" id="slide-9" style="background:;">
+      <slide class="move_image" id="slide-9" style="background:;">
   <hgroup>
-    <h2>Continuous animation</h2>
+    <h2>Decoupling the Problem</h2>
   </hgroup>
   <article>
-    <ol>
-<li>Naive interpolation: <em>wrong statistics</em></li>
-<li>ESG: elegant and correct</li>
-<li>Making it smooth</li>
-</ol>
+    <div style='clear: both;'>
+  We can <em>reduce</em> our problem to a <strong>single random variable</strong>.
+</div>
+
+<p><img src="figure/decoupling-31.png" alt="plot of chunk decoupling-3"> <img src="figure/decoupling-32.png" alt="plot of chunk decoupling-3"> <img src="figure/decoupling-33.png" alt="plot of chunk decoupling-3"> </p>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
-      <slide class="" id="slide-10" style="background:;">
+      <slide class="move_image" id="slide-10" style="background:;">
   <hgroup>
-    <h3>First pass: connect the dots</h3>
+    <h2>Decoupling the Problem</h2>
   </hgroup>
   <article>
-    <p>(show draws from normal distribution; function of time)</p>
+    <div style='clear: both;'>
+  We can <em>reduce</em> our problem to a <strong>single random variable</strong>.
+</div>
 
-<p>(show dots connected)</p>
+<p><img src="figure/decoupling-41.png" alt="plot of chunk decoupling-4"> <img src="figure/decoupling-42.png" alt="plot of chunk decoupling-4"> <img src="figure/decoupling-43.png" alt="plot of chunk decoupling-4"> <img src="figure/decoupling-44.png" alt="plot of chunk decoupling-4"> </p>
 
-<p>(show tons of timetraces; highlight one)</p>
-
-<p>So what&#39;s wrong with this?</p>
-
-<p>(Plot animated Q-Q plots)</p>
-
-<p>Basis functions</p>
+<div class='bigger' style='clear: both; width: 100%; text-align: center;'>
+  $$f = Ln$$
+</div>
 
   </article>
   <!-- Presenter Notes -->
 </slide>
 
-      <slide class="" id="slide-11" style="background:;">
+      <slide class="move_image" id="slide-11" style="background:;">
   <hgroup>
-    <h1>Other ideas</h1>
+    <h2>Decoupling the Problem</h2>
   </hgroup>
   <article>
-    <p>Atomic motion might be a good way to show the advantages of smoothness</p>
+    <div style='clear: both;'>
+  We can <em>reduce</em> our problem to a <strong>single random variable</strong>.
+</div>
+
+<p><img src='custom/reduce_smooth.gif'>
+<img src="figure/unnamed-chunk-91.png" alt="plot of chunk unnamed-chunk-9"> <img src="figure/unnamed-chunk-92.png" alt="plot of chunk unnamed-chunk-9"> </p>
+
+<p><img src='custom/reduce_noisy.gif'></p>
+
+<div class='bigger' style='clear: both; width: 100%; text-align: center;'>
+  $$f(t) = Ln(t)$$
+</div>
 
   </article>
   <!-- Presenter Notes -->
@@ -257,10 +212,12 @@ Disadvantages of ESG which mine corrects:</li>
 
       <slide class="" id="slide-12" style="background:;">
   <hgroup>
-    <h2>Hey, is ESG only independent at the keyframes?</h2>
+    <h2>Caveat: statistics</h2>
   </hgroup>
   <article>
-    <p>Might be good to point out.</p>
+    <p><div style='font-size: 2em; text-align: center;'>
+    Too easy to mislead...
+  </div></p>
 
   </article>
   <!-- Presenter Notes -->
@@ -268,14 +225,525 @@ Disadvantages of ESG which mine corrects:</li>
 
       <slide class="" id="slide-13" style="background:;">
   <hgroup>
-    <h2>Conclusions</h2>
+    <h2>Caveat: statistics (individual points)</h2>
   </hgroup>
   <article>
-    <ul>
-<li>Part of my goal is to make ESG&#39;s excellent work more widely known</li>
-<li>Animated uncertainty visualization belongs in the toolbox of every statistical researcher.</li>
-<li>If that uncertainty has a Gaussian distribution, the method I&#39;ve presented is an excellent way to achieve it.</li>
+    <p><img src="figure/unnamed-chunk-10.png" alt="plot of chunk unnamed-chunk-10"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-14" style="background:;">
+  <hgroup>
+    <h2>Caveat: statistics (naive interpolation)</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-11.png" alt="plot of chunk unnamed-chunk-11"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-15" style="background:;">
+  <hgroup>
+    <h2>Caveat: statistics (entire distribution)</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-12.png" alt="plot of chunk unnamed-chunk-12"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-16" style="background:;">
+  <hgroup>
+    <h2>Caveat: statistics (interpolated distribution)</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-13.png" alt="plot of chunk unnamed-chunk-13"> </p>
+
+<div style='font-size: 1.6em; text-align: center;'>
+  Statistics <em>between</em> keyframes<br>
+  are <strong>clearly different</strong><br>
+  from statistics <em>at</em> keyframes
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-17" style="background:;">
+  <hgroup>
+    <h2>Solution: connect differently</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-14.png" alt="plot of chunk unnamed-chunk-14"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-18" style="background:;">
+  <hgroup>
+    <h2>Solution: connect differently</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-15.png" alt="plot of chunk unnamed-chunk-15"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-19" style="background:;">
+  <hgroup>
+    <h2>Distributions: old connection</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-16.png" alt="plot of chunk unnamed-chunk-16"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-20" style="background:;">
+  <hgroup>
+    <h2>Distributions: new connection</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-17.png" alt="plot of chunk unnamed-chunk-17"> </p>
+
+<p><strong>E</strong>hlschlaeger, <strong>S</strong>hortridge, <strong>G</strong>oodchild (<strong>ESG</strong>)</p>
+
+<ul class = "build">
+<li>By eye: looks like better statistics</li>
+<li>By math: easy to prove <strong>same distribution at all times</strong></li>
 </ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-21" style="background:;">
+  <hgroup>
+    <h2>ESG: Basis function view</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-18.png" alt="plot of chunk unnamed-chunk-18"> </p>
+
+<div style='text-align: center; margin-top: -2em;'>
+$$y(t) = \sum_{i=1}^N \epsilon_i b_i(t) \;\;\;\;\;\;
+\epsilon_i \underset{\text{i.i.d.}}{\sim} N(0, \sigma^2) $$
+</div>
+
+<ul class = "build">
+<li><strong>NOTE</strong>: \(y(t)\) is sum of Gaussian random variables \(\rightarrow\) <em>is also Gaussian</em></li>
+<li>\(\therefore\) statistics completely determined by mean and variance, or
+\(\langle y(t) \rangle\) and \(\langle y(t)^2 \rangle\)</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-22" style="background:;">
+  <hgroup>
+    <h2>ESG: Checking the statistics</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-19.png" alt="plot of chunk unnamed-chunk-19"> </p>
+
+<div style='text-align: center;'>
+Zoom in on a single transition region...
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-23" style="background:;">
+  <hgroup>
+    <h2>Statistics in the transition region</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-21.png" alt="plot of chunk unnamed-chunk-21"> </p>
+
+<p><ul class='block2 build' style='margin-top: -1em;'>
+    <li style='width: 40%;'>
+      \[\begin{split}
+      \langle y(t) \rangle &= \langle \epsilon_1 \rangle b_1(t) + \langle \epsilon_2 \rangle b_2(t) \\
+      &= 0
+      \end{split}\]
+    </li>
+    <li style='width: 60%;'>
+      \[\begin{split}
+      \langle y(t)^2 \rangle &= b_1(t)^2 \langle \epsilon_1^2 \rangle + 2b_1(t)b_2(t)\langle \epsilon_1\epsilon_2 \rangle + b_2(t)^2 \langle \epsilon_2^2 \rangle \\
+      &= \sigma^2 (b_1(t)^2 + b_2(t)^2)
+      \end{split}\]
+    </li>
+    <li style='font-size: 1.4em; width: 100%; margin-top: -1em;'>
+      \(\therefore\) want \((b_1(t)^2 + b_2(t)^2) \equiv 1 \;\;\; \forall t\)
+    </li>
+    <li style='font-size: 1.4em; width: 100%;'>
+      \(b_1(t) = \cos\left(\frac{t-t_1}{t_2-t_1}\frac{\pi}{2}\right) \;\;\;\;\;\;\;\; b_2(t) = \sin\left(\frac{t-t_1}{t_2-t_1}\frac{\pi}{2}\right)\)
+    </li>
+  </ul></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-24" style="background:;">
+  <hgroup>
+    <h2>Disadvantage: correlation</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-23.png" alt="plot of chunk unnamed-chunk-23"> </p>
+
+<p>\[\text{Cor}(t_1, t_2) = 0 \;\;\;\;\;\;\;\;\;\; \text{:-)}\]</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-25" style="background:;">
+  <hgroup>
+    <h2>Disadvantage: correlation</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-24.png" alt="plot of chunk unnamed-chunk-24"> </p>
+
+<p>\[\text{Cor}(t_1, t_2) = 0 \;\;\;\;\;\;\;\;\;\; \text{:-)}\]
+\[\text{Cor}(t_{1.5}, t_{2.5}) = \frac{1}{2} \;\;\;\;\;\; \text{:-(} \;\;\, \]</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-26" style="background:;">
+  <hgroup>
+    <h2>Disadvantage: velocity, acceleration</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-25.png" alt="plot of chunk unnamed-chunk-25"> </p>
+
+<p><div id='picard'>
+    <img src='custom/picard_smile_position.png'>
+    <img class='not_yet' src='custom/picard_wonder_velocity.png'>
+    <img class='not_yet' src='custom/picard_wtf_acceleration.png'>
+  </div></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-27" style="background:;">
+  <hgroup>
+    <h2>Disadvantage: velocity, acceleration</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-27.png" alt="plot of chunk unnamed-chunk-27"> </p>
+
+<p><div id='picard'>
+    <img src='custom/picard_smile_position.png'>
+    <img src='custom/picard_wonder_velocity.png'>
+    <img class='not_yet' src='custom/picard_wtf_acceleration.png'>
+  </div></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-28" style="background:;">
+  <hgroup>
+    <h2>Disadvantage: velocity, acceleration</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-29.png" alt="plot of chunk unnamed-chunk-29"> </p>
+
+<p><div id='picard'>
+    <img src='custom/picard_smile_position.png'>
+    <img src='custom/picard_wonder_velocity.png'>
+    <img src='custom/picard_wtf_acceleration.png'>
+  </div></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-29" style="background:;">
+  <hgroup>
+    <h2>My proposal</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-31.png" alt="plot of chunk unnamed-chunk-31"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-30" style="background:;">
+  <hgroup>
+    <h2>My proposal</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-321.png" alt="plot of chunk unnamed-chunk-32"> <img src="figure/unnamed-chunk-322.png" alt="plot of chunk unnamed-chunk-32"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-31" style="background:;">
+  <hgroup>
+    <h2>Basis view</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-33.png" alt="plot of chunk unnamed-chunk-33"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-32" style="background:;">
+  <hgroup>
+    <h2>Basis view</h2>
+  </hgroup>
+  <article>
+    <p><img src="figure/unnamed-chunk-341.png" alt="plot of chunk unnamed-chunk-34"> <img src="figure/unnamed-chunk-342.png" alt="plot of chunk unnamed-chunk-34"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-33" style="background:;">
+  <hgroup>
+    <h2>The matrix (small N)</h2>
+  </hgroup>
+  <article>
+    <div class='bigger'>
+  $N = 10:$
+</div>
+
+<p><img src="figure/my-matrix-small.png" alt="plot of chunk my-matrix-small"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-34" style="background:;">
+  <hgroup>
+    <h2>The matrix (large N)</h2>
+  </hgroup>
+  <article>
+    <div class='bigger'>
+  $N = 100:$
+</div>
+
+<p><img src="figure/my-matrix-large.png" alt="plot of chunk my-matrix-large"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-35" style="background:;">
+  <hgroup>
+    <h2>Explicit formula</h2>
+  </hgroup>
+  <article>
+    <div class='bigger'>
+  <div class='bigger' style='margin-top: 1em;'>
+    $$f(t) = \frac{1}{\sqrt{N}} \sum_{i=1}^N \left[
+      \epsilon_{2i-1} \sin \left( \frac{\pi i t}{N} \right) +
+      \epsilon_{2i}   \cos \left( \frac{\pi i t}{N} \right)
+    \right]$$
+  </div>
+  <ul class='build' style='width: 100%;'> 
+    <li style='width: 100%;'>$2N$ independent draws $(\epsilon_1, \epsilon_2, \cdots, \epsilon_{2N})$</li>
+    <li>
+    $$\begin{split}
+    \langle f(t) \rangle &= \frac{1}{\sqrt{N}} \sum_{i=1}^N
+    \left[
+      \langle \epsilon_{2i-1} \rangle \sin \left( \frac{\pi i t}{N} \right) +
+      \langle \epsilon_{2i  } \rangle \cos \left( \frac{\pi i t}{N} \right)
+    \right] \\
+    &= 0
+    \end{split}$$
+    </li>
+    <li>
+    $$\begin{split}
+    \langle f(t)^2 \rangle &= \frac{\sigma^2}{N} \sum_{i=1}^N
+    \left[
+      \sin^2 \left( \frac{\pi i t}{N} \right) +
+      \cos^2 \left( \frac{\pi i t}{N} \right)
+    \right] \\
+    &= \sigma^2
+    \end{split}$$
+    </li>
+  </ul>
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-36" style="background:;">
+  <hgroup>
+    <h2>Covariance: don&#39;t worry about keyframes!</h2>
+  </hgroup>
+  <article>
+    <div class='bigger'>
+  $$ \langle f_N(t) f_N(t + \tau) \rangle = 
+    \frac{1}{N}
+    \sum_{i=1}^N \cos \left(
+      \frac{\pi i \tau}{N}
+    \right)
+  $$
+</div>
+
+<ul class='build'><li>(Independent of $t$!)</li></ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-37" style="background:;">
+  <hgroup>
+    <h2>Covariance: don&#39;t worry about keyframes!</h2>
+  </hgroup>
+  <article>
+    <div class='bigger'>
+  $$ \langle f_N(t) f_N(t + \tau) \rangle = 
+    \frac{1}{N}
+    \sum_{i=1}^N \cos \left(
+      \frac{\pi i \tau}{N}
+    \right)
+  $$
+</div>
+
+<div style='width: 100%; text-align: center;'>
+  $$N = 2$$
+</div>
+
+<p><img src="figure/covariance-2.png" alt="plot of chunk covariance-2"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-38" style="background:;">
+  <hgroup>
+    <h2>Covariance: don&#39;t worry about keyframes!</h2>
+  </hgroup>
+  <article>
+    <div class='bigger'>
+  $$ \langle f_N(t) f_N(t + \tau) \rangle = 
+    \frac{1}{N}
+    \sum_{i=1}^N \cos \left(
+      \frac{\pi i \tau}{N}
+    \right)
+  $$
+</div>
+
+<div style='width: 100%; text-align: center;'>
+  $$N = 5$$
+</div>
+
+<p><img src="figure/covariance-5.png" alt="plot of chunk covariance-5"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-39" style="background:;">
+  <hgroup>
+    <h2>Covariance: don&#39;t worry about keyframes!</h2>
+  </hgroup>
+  <article>
+    <div class='bigger'>
+  $$ \langle f_N(t) f_N(t + \tau) \rangle = 
+    \frac{1}{N}
+    \sum_{i=1}^N \cos \left(
+      \frac{\pi i \tau}{N}
+    \right)
+  $$
+</div>
+
+<div style='width: 100%; text-align: center;'>
+  $$N = 10$$
+</div>
+
+<p><img src="figure/covariance-10.png" alt="plot of chunk covariance-10"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-40" style="background:;">
+  <hgroup>
+    <h2>Covariance: don&#39;t worry about keyframes!</h2>
+  </hgroup>
+  <article>
+    <div class='bigger'>
+  $$ \langle f_N(t) f_N(t + \tau) \rangle = 
+    \frac{1}{N}
+    \sum_{i=1}^N \cos \left(
+      \frac{\pi i \tau}{N}
+    \right)
+  $$
+</div>
+
+<div style='width: 100%; text-align: center;'>
+  $$N = 50$$
+</div>
+
+<p><img src="figure/covariance-50.png" alt="plot of chunk covariance-50"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-41" style="background:;">
+  <hgroup>
+    <h2>Covariance: infinite limit</h2>
+  </hgroup>
+  <article>
+    <div class='bigger'>
+  $$ \lim_{N \rightarrow \infty} \langle f_N(t) f_N(t + \tau) \rangle = 
+    \frac{1}{N}
+    \sum_{i=1}^N \cos \left(
+      \frac{\pi i \tau}{N}
+    \right) = 
+    \frac{\sin(\pi \tau)}{\pi \tau}
+  $$
+</div>
+
+<div style='width: 100%; text-align: center;'>
+  $$N \rightarrow \infty$$
+</div>
+
+<p><img src="figure/covariance-Inf.png" alt="plot of chunk covariance-Inf"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-42" style="background:;">
+  <hgroup>
+    <h2>Timetraces: ALSO Gaussian processes!</h2>
+  </hgroup>
+  <article>
+    <p><img style="width: 100%;" src="custom/deeper.png"></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+      <slide class="" id="slide-43" style="background:;">
+  <hgroup>
+    <h2>Steel strain: animated</h2>
+  </hgroup>
+  <article>
+    <p><img style="width: 100%;" src="custom/steel_strain/steel_strain.gif"></p>
 
   </article>
   <!-- Presenter Notes -->
