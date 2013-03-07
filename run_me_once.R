@@ -46,6 +46,7 @@ save(x.gap.surface, d.strain, d.gap, M.aniso, file='custom/trained.RO')
 # Load libraries
 library(animation)
 library(Cairo)
+library(rgl)
 
 # Set parameters
 open3d()
