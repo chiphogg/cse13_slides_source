@@ -4,3 +4,8 @@ rgl_*.html
 figure/
 index.R
 index.md
+custom/steel_strain/*.png
+assets
+exact_arguments.rda
+libraries
+snapshot.png
