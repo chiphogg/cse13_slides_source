@@ -31,6 +31,7 @@ R --version | head -1
     - A handy tool to grab the latest-and-greatest version of actively
       developed packages.  Install this first, by running the following command
       in `R`:
+
       ```r
       install.packages('devtools')
       ```
@@ -39,6 +40,7 @@ R --version | head -1
     - This is the library that makes the slides.
       [The instructions](http://ramnathv.github.com/slidify/start.html)
       are as follows:
+
       ```r
       library(devtools)
       install_github('slidify', 'ramnathv')
@@ -46,6 +48,7 @@ R --version | head -1
       ```
 
   3. Other libraries
+
     ```r
     install.packages(c('gppois', 'reshape2', 'ggplot2', 'Cairo'),
       dependencies=TRUE)
